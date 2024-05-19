@@ -35,6 +35,7 @@ from sage.utils.supports import (
     convert_intermediate_steps,
     convert_tools,
 )
+from sage.crewai_utils.gamer.crew_runnable import CrewAIRunnable
 
 
 async def check_for_data_updates() -> bool:
@@ -327,6 +328,18 @@ class SourceQAService:
             memory = self._chat_memory
         return memory
 
+    def _create_test_agent(self):
+        """Creates a test agent"""
+
+        def dummy(x: dict):
+            return {"answer": "hellllo"}
+
+        async def adummy(x: dict):
+            return {"answer": "hellllo"}
+
+        # _runnable = RunnableLambda(dummy, afunc=adummy)
+        return CrewAIRunnable(callback=cl.AsyncLangchainCallbackHandler()).mycrew()
+
     def _create_agent_runnable(self, chat_history_loader):
         """Creates the agent runnable"""
         agent_qa_prompt = agent_prompt(self.qa_template_agent)
@@ -419,7 +432,8 @@ class SourceQAService:
         chat_history_loader = self._load_chat_history(self._get_memory())
 
         if "agent" in profile.lower():
-            _runnable = self._create_agent_runnable(chat_history_loader)
+            # _runnable = self._create_agent_runnable(chat_history_loader)
+            _runnable = self._create_test_agent()
         else:
             # Condense Question Chain
             condense_question_prompt = PromptTemplate.from_template(
